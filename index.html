@@ -1,0 +1,346 @@
+
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport"
+      content="width=device-width, initial-scale=1.0">
+
+<title>가위바위보 룰렛</title>
+
+<style>
+  * {
+    box-sizing: border-box;
+  }
+
+  body {
+    margin: 0;
+    min-height: 100vh;
+    padding: 25px 15px;
+    background: linear-gradient(135deg, #172554, #312e81);
+    font-family: Arial, "Malgun Gothic", sans-serif;
+    color: white;
+    text-align: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .container {
+    width: 100%;
+    max-width: 750px;
+  }
+
+  h1 {
+    font-size: clamp(34px, 7vw, 56px);
+    margin: 0 0 20px;
+  }
+
+  .result-box {
+    min-height: 120px;
+    padding: 18px 10px;
+    margin-bottom: 20px;
+    background: rgba(255,255,255,0.12);
+    border-radius: 25px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  #result {
+    font-size: clamp(35px, 8vw, 65px);
+    font-weight: 900;
+    color: #fde047;
+    line-height: 1.3;
+  }
+
+  .wheel-area {
+    position: relative;
+    width: min(85vw, 470px);
+    height: min(85vw, 470px);
+    margin: 20px auto 35px;
+  }
+
+  .wheel {
+    position: absolute;
+    inset: 0;
+    border-radius: 50%;
+    overflow: hidden;
+    border: 10px solid white;
+    box-shadow: 0 15px 35px rgba(0,0,0,0.4);
+    background: conic-gradient(
+      from -60deg,
+      #facc15 0deg 120deg,
+      #38bdf8 120deg 240deg,
+      #fb7185 240deg 360deg
+    );
+    transform: rotate(0deg);
+  }
+
+  .wheel-label {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    width: 36%;
+    text-align: center;
+    transform-origin: center;
+    font-size: clamp(25px, 6vw, 42px);
+    font-weight: 900;
+    color: #172554;
+    line-height: 1.3;
+  }
+
+  /* 각 칸의 중심에 글씨를 배치합니다. */
+  .scissors {
+    transform: translate(-50%, -50%) translateY(-115%);
+  }
+
+  .rock {
+    transform: translate(-50%, -50%)
+               rotate(120deg)
+               translateY(-115%)
+               rotate(-120deg);
+  }
+
+  .paper {
+    transform: translate(-50%, -50%)
+               rotate(240deg)
+               translateY(-115%)
+               rotate(-240deg);
+  }
+
+  .pointer {
+    position: absolute;
+    z-index: 5;
+    top: -17px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 0;
+    height: 0;
+    border-left: 24px solid transparent;
+    border-right: 24px solid transparent;
+    border-top: 48px solid #ffffff;
+    filter: drop-shadow(0 4px 3px rgba(0,0,0,0.4));
+  }
+
+  .center-circle {
+    position: absolute;
+    z-index: 4;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    width: 65px;
+    height: 65px;
+    background: white;
+    border: 8px solid #4338ca;
+    border-radius: 50%;
+    box-shadow: 0 3px 10px rgba(0,0,0,0.3);
+  }
+
+  .buttons {
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 18px;
+  }
+
+  button {
+    min-height: 85px;
+    padding: 20px 35px;
+    font-size: 30px;
+    font-weight: 900;
+    border: none;
+    border-radius: 20px;
+    cursor: pointer;
+    touch-action: manipulation;
+  }
+
+  #spinBtn {
+    background: #facc15;
+    color: #172554;
+    box-shadow: 0 7px 0 #ca8a04;
+  }
+
+  #againBtn {
+    background: white;
+    color: #172554;
+    box-shadow: 0 7px 0 #94a3b8;
+  }
+
+  button:active {
+    transform: scale(0.97);
+  }
+
+  button:focus-visible {
+    outline: 4px solid #ffffff;
+    outline-offset: 5px;
+  }
+
+  button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+
+  .guide {
+    margin-top: 35px;
+    font-size: 21px;
+    color: #ddd6fe;
+    line-height: 1.6;
+  }
+
+  @media (max-width: 550px) {
+    .wheel-area {
+      width: min(85vw, 360px);
+      height: min(85vw, 360px);
+    }
+
+    .wheel-label {
+      font-size: clamp(22px, 6vw, 32px);
+    }
+
+    .buttons button {
+      width: 100%;
+    }
+
+    .center-circle {
+      width: 50px;
+      height: 50px;
+    }
+  }
+</style>
+</head>
+
+<body>
+
+<main class="container">
+
+  <h1>✊ 가위바위보 룰렛 ✌️</h1>
+
+  <div class="result-box">
+    <div id="result" role="status" aria-live="polite">
+      돌리기를 눌러주세요!
+    </div>
+  </div>
+
+  <div class="wheel-area">
+
+    <div class="pointer"></div>
+
+    <div class="wheel" id="wheel">
+
+      <div class="wheel-label scissors">
+        ✌️<br>가위
+      </div>
+
+      <div class="wheel-label rock">
+        ✊<br>바위
+      </div>
+
+      <div class="wheel-label paper">
+        ✋<br>보
+      </div>
+
+    </div>
+
+    <div class="center-circle"></div>
+
+  </div>
+
+  <div class="buttons">
+    <button id="spinBtn" type="button">
+      🎯 돌리기
+    </button>
+
+    <button id="againBtn" type="button">
+      🔄 다시 돌리기
+    </button>
+  </div>
+
+  <p class="guide">
+    버튼을 누르면 룰렛이 빙글빙글 돌아갑니다.<br>
+    위쪽 화살표가 가리키는 칸이 결과입니다!
+  </p>
+
+</main>
+
+<script>
+"use strict";
+
+const wheel = document.getElementById("wheel");
+const result = document.getElementById("result");
+const spinBtn = document.getElementById("spinBtn");
+const againBtn = document.getElementById("againBtn");
+
+const choices = [
+  { name: "가위", emoji: "✌️" },
+  { name: "바위", emoji: "✊" },
+  { name: "보", emoji: "✋" }
+];
+
+let currentRotation = 0;
+let spinning = false;
+
+function spinWheel() {
+  if (spinning) return;
+
+  spinning = true;
+
+  spinBtn.disabled = true;
+  againBtn.disabled = true;
+
+  result.textContent = "🎡 룰렛 돌아가는 중!";
+
+  // 가위, 바위, 보 중 하나를 무작위로 선택
+  const selectedIndex = Math.floor(Math.random() * 3);
+
+  // 원판의 각 칸은 120도입니다.
+  // 초기 위치에서 가위는 위쪽,
+  // 바위는 오른쪽 아래, 보는 왼쪽 아래입니다.
+  const targetAngles = [0, 240, 120];
+
+  // 최소 6바퀴에서 최대 9바퀴 회전
+  const fullTurns = 6 + Math.floor(Math.random() * 4);
+
+  // 현재 회전 각도를 0~359도로 정리
+  const normalized =
+    ((currentRotation % 360) + 360) % 360;
+
+  // 선택한 칸의 중심을 위쪽 화살표에 맞춤
+  const targetAngle = targetAngles[selectedIndex];
+
+  const adjustment =
+    (targetAngle - normalized + 360) % 360;
+
+  const totalSpin = fullTurns * 360 + adjustment;
+
+  currentRotation += totalSpin;
+
+  // 처음에는 빠르고 마지막에는 천천히 멈춤
+  wheel.style.transition =
+    "transform 4s cubic-bezier(0.12, 0.75, 0.12, 1)";
+
+  wheel.style.transform =
+    `rotate(${currentRotation}deg)`;
+
+  // 회전이 끝나면 결과 표시
+  setTimeout(() => {
+    const selected = choices[selectedIndex];
+
+    result.textContent =
+      `${selected.emoji} 결과는 ${selected.name}!`;
+
+    spinning = false;
+
+    spinBtn.disabled = false;
+    againBtn.disabled = false;
+
+  }, 4050);
+}
+
+spinBtn.addEventListener("click", spinWheel);
+againBtn.addEventListener("click", spinWheel);
+
+</script>
+
+</body>
+</html>
